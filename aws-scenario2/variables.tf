@@ -14,12 +14,22 @@ variable "pub_subnet_cidr" {
     description = " Public subnet cidr block"
 }
 
-variable "priv_subnet_cidr" {
-    default = "10.0.1.0/24"
-    description = " Private subnet cidr block"
+variable "priv_subnet_cidr1" {
+    default = "10.0.2.0/24"
+    description = " Private subnet cidr block 1"
+}
+
+variable "priv_subnet_cidr2" {
+    default = "10.0.3.0/24"
+    description = " Private subnet cidr block 2"
 }
 
 #RDS
+variable "db_name" {
+    default = "mydb"
+    description = "RDS db name" 
+}
+
 variable "port" {
     default = 5432
     description = "RDS port"
@@ -36,7 +46,7 @@ variable "db_storage_type" {
 }
 
 variable "engine" {
-    default = "postgresql"
+    default = "postgres"
     description = "RDS engine"
 }
 
@@ -65,6 +75,11 @@ variable "db_pass" {
     description = "RDS master password"
 }
 
+variable "multi_az" {
+    default = false
+    description = "RDS multi az flag"
+}
+
 #EC2
 variable "ec2_name" {
     default = "webapp"
@@ -72,7 +87,7 @@ variable "ec2_name" {
 }
 
 variable "instance_type" {
-    default = "t2_micro"
+    default = "t2.micro"
     description = "EC2 instance type"
 }
 
@@ -92,6 +107,15 @@ variable "my_ip" {
 }
 
 variable "ami" {
-    default = ""
+    default = "ami-07efac79022b86107"
     description = "EC2 ami"
+}
+
+variable "volume_size" {
+    default = "8"
+    description = "EC2 ebs size"
+}
+
+variable "ubuntu_account_number" {
+  default = "099720109477"
 }

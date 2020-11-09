@@ -10,7 +10,7 @@ data "aws_availability_zones" "available" {
 }
 
 /*
-* Subnet Publica
+* Public Subnet
 */
 resource "aws_internet_gateway" "igw" {
     vpc_id = aws_vpc.pub_priv_vpc.id
@@ -43,13 +43,27 @@ resource "aws_subnet" "pub_subnet" {
     }
 }
 
-resource "aws_subnet" "priv_subnet" {
+/*
+* Private Subnet
+*/
+resource "aws_subnet" "priv_subnet1" {
     vpc_id = aws_vpc.pub_priv_vpc.id
-    cidr_block = var.priv_subnet_cidr
+    cidr_block = var.priv_subnet_cidr1
     availability_zone = data.aws_availability_zones.available.names[0]
 
     tags = {
-        Name = "priv_subnet"
+        Name = "priv_subnet1"
+    }
+}
+
+
+resource "aws_subnet" "priv_subnet2" {
+    vpc_id = aws_vpc.pub_priv_vpc.id
+    cidr_block = var.priv_subnet_cidr2
+    availability_zone = data.aws_availability_zones.available.names[1]
+
+    tags = {
+        Name = "priv_subnet2"
     }
 }
 
@@ -58,9 +72,6 @@ resource "aws_route_table_association" "pub_association" {
   route_table_id = aws_route_table.rt_pub.id
 }
 
-/*
-* Subnet Privada
-*/
 resource "aws_eip" "nat_eip" {
     vpc = true
 
@@ -91,15 +102,19 @@ resource "aws_route_table" "rt_priv" {
     }
 }
 
-resource "aws_route_table_association" "priv_association" {
-  subnet_id = aws_subnet.priv_subnet.id
+resource "aws_route_table_association" "priv_association1" {
+  subnet_id = aws_subnet.priv_subnet1.id
   route_table_id = aws_route_table.rt_priv.id
 }
 
+resource "aws_route_table_association" "priv_association2" {
+  subnet_id = aws_subnet.priv_subnet2.id
+  route_table_id = aws_route_table.rt_priv.id
+}
 
 resource "aws_network_acl" "nacl" {
     vpc_id = aws_vpc.pub_priv_vpc.id
-    subnet_ids = [aws_subnet.pub_subnet.id, aws_subnet.priv_subnet.id]
+    subnet_ids = [aws_subnet.pub_subnet.id, aws_subnet.priv_subnet1.id, aws_subnet.priv_subnet2.id]
 
     ingress {
         protocol   = -1

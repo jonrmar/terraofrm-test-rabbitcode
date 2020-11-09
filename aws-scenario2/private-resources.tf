@@ -8,7 +8,7 @@ resource "aws_security_group" "db_sg" {
     from_port   = var.port
     to_port     = var.port
     protocol    = "tcp"
-    security_groups = [aws_security_group.ec2_sg]
+    security_groups = [aws_security_group.ec2_sg.id]
   }
 
   # Allow all outbound traffic.
@@ -22,11 +22,11 @@ resource "aws_security_group" "db_sg" {
 
 resource "aws_db_subnet_group" "_" {
   name = "rds_subnet_group"
-  subnet_ids = [aws_subnet.priv_subnet.id]
+  subnet_ids = [aws_subnet.priv_subnet1.id, aws_subnet.priv_subnet2.id]
 }
 
 resource "aws_db_instance" "db" {
-  name = "private_rds"
+  name = var.db_name
 
   allocated_storage = var.db_storage
   storage_type = var.db_storage_type 
@@ -38,7 +38,12 @@ resource "aws_db_instance" "db" {
   username = var.db_username  
   password = var.db_pass 
   db_subnet_group_name = aws_db_subnet_group._.id
-
+  multi_az = var.multi_az
+  skip_final_snapshot = true
   
-  vpc_security_group_ids = [aws_security_group.db_sg]
+  vpc_security_group_ids = [aws_security_group.db_sg.id]
+}
+
+output "rds_endpoint" {
+  value = aws_db_instance.db.endpoint
 }

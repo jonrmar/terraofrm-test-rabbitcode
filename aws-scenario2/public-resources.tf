@@ -1,7 +1,7 @@
 resource "aws_security_group" "ec2_sg" {
-  name = "ec2_sg"
+  name        = "ec2_sg"
   description = "Security group for public ec2"
-  vpc_id = aws_vpc.pub_priv_vpc.id
+  vpc_id      = aws_vpc.pub_priv_vpc.id
 
   # Only SSH from admin ip
   ingress {
@@ -31,7 +31,7 @@ resource "aws_security_group" "ec2_sg" {
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners = [var.ubuntu_account_number]
+  owners      = [var.ubuntu_account_number]
 
   filter {
     name   = "name"
@@ -44,35 +44,51 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+# EC2 using resources
 resource "aws_instance" "public_ec2" {
-    ami = data.aws_ami.ubuntu.id
-    instance_type = var.instance_type
-    subnet_id = aws_subnet.pub_subnet.id
-    associate_public_ip_address = var.associate_public_ip_address
-    key_name = aws_key_pair._.key_name
-    vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.instance_type
+  subnet_id                   = aws_subnet.pub_subnet.id
+  associate_public_ip_address = var.associate_public_ip_address
+  key_name                    = aws_key_pair._.key_name
+  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
 
-    root_block_device {
-      volume_size = var.volume_size
-    }
+  root_block_device {
+    volume_size = var.volume_size
+  }
 
-    tags = {
-      "Name" = var.ec2_name
-    }
+  tags = {
+    "Name" = var.ec2_name
+  }
+}
+
+# EC2 using modules
+module "public_ec2" {
+  source = "./modules/ec2"
+
+  ami_id                      = data.aws_ami.ubuntu.id
+  subnet_id                   = aws_subnet.pub_subnet.id
+  associate_public_ip_address = var.associate_public_ip_address
+  key_name                    = aws_key_pair._.key_name
+  sg_ids                      = [aws_security_group.ec2_sg.id]
+
+  volume_size = var.volume_size
+
+  ec2_name = var.ec2_name
 }
 
 resource "aws_eip" "ec2_eip" {
-  vpc = true
+  vpc      = true
   instance = aws_instance.public_ec2.id
 }
 
 resource "tls_private_key" "_" {
   algorithm = "RSA"
-  rsa_bits = 4096
+  rsa_bits  = 4096
 }
 
 resource "aws_key_pair" "_" {
-  key_name = var.key_name
+  key_name   = var.key_name
   public_key = tls_private_key._.public_key_openssh
 }
 

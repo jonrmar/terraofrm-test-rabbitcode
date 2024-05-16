@@ -1,1 +1,0 @@
-**AWS Scenario 2**
